@@ -1,7 +1,7 @@
 # RandomMine pygame file
 import pygame
 import sys
-from pygame.locals import QUIT
+from pygame.locals import QUIT, Rect
 
 Display_width = 1200
 Display_height = 800
@@ -19,6 +19,12 @@ DISPLAY = pygame.display.set_mode((Display_width, Display_height))
 SURFACE = pygame.Surface((Surface_width, Surface_height))
 FPSCLOCK = pygame.time.Clock()
 
+# Rock
+Rock_rect = Rect(0, 0, 394, 264)
+Rock_rect.center = (Surface_width / 2, Surface_height / 2)
+
+Rock_image = pygame.transform.scale(pygame.image.load("resources/Rock.png"), Rock_rect.size)
+
 
 def main():
     while True:
@@ -30,12 +36,13 @@ def main():
 
         SURFACE.fill((255, 0, 0))
 
+        SURFACE.blit(Rock_image, Rock_rect.topleft)
+
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
 
         pygame.display.update()
-        FPSCLOCK.tick()
+        FPSCLOCK.tick(FPS)
 
 
 if __name__ == "__main__":
     main()
-
