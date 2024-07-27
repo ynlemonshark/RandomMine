@@ -33,6 +33,8 @@ def main():
     tickTime = 1000 / FPS
     vibrationTick = 0
 
+    CHANNEL = "MINE"
+
     while True:
 
         pygame_events = pygame.event.get()
@@ -47,19 +49,22 @@ def main():
                 event_pos = (pygame_event.pos[0] / display_ratio_x,
                              pygame_event.pos[1] / display_ratio_y)
 
-                # mining
-                if Rock_rect.collidepoint(event_pos):
-                    vibrationTick = rock_vibration_delay
+                if CHANNEL == "MINE":  # MOUSEBUTTONDOWN - MINE
+
+                    # mining
+                    if Rock_rect.collidepoint(event_pos):
+                        vibrationTick = rock_vibration_delay
 
         # surface set
         SURFACE.fill((255, 0, 0))
 
-        # rock vibration
-        if vibrationTick:
-            SURFACE.blit(Rock_image, (Rock_rect.left + rock_vibration_power, Rock_rect.top))
-            vibrationTick = max(vibrationTick - tickTime, 0)
-        else:
-            SURFACE.blit(Rock_image, Rock_rect.topleft)
+        if CHANNEL == "MINE":
+            # rock vibration
+            if vibrationTick:
+                SURFACE.blit(Rock_image, (Rock_rect.left + rock_vibration_power, Rock_rect.top))
+                vibrationTick = max(vibrationTick - tickTime, 0)
+            else:
+                SURFACE.blit(Rock_image, Rock_rect.topleft)
 
         # system
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
