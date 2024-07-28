@@ -3,6 +3,7 @@ import pygame
 import sys
 from pygame.locals import QUIT, Rect, MOUSEBUTTONDOWN
 from random import randint
+from math import sin, cos, radians
 
 Display_width = 1200
 Display_height = 800
@@ -42,11 +43,31 @@ mineral_size = (64, 64)
 mineral_images = pygame.transform.scale(pygame.image.load("resources/minerals.png"),
                                         (mineral_size[0] * len(minerals), mineral_size[1]))
 
+mineral_min_angle = 70
+mineral_max_angle = 110
+
+mineral_min_power = 600
+mineral_max_power = 700
+
+mineral_gravity = 1200
+
+mineral_floor = 600
+
 
 class Mineral:
-    def __init__(self, sort):
+    def __init__(self, sort, angle, power):
         self.sort = sort
         self.pos = Rock_rect.center
+
+        self.x_force = power * cos(radians(angle))
+        self.y_force = power * sin(radians(angle))
+
+    def tick(self, time):
+        if self.pos[1] < mineral_floor:
+            self.y_force -= mineral_gravity * time / 1000
+            self.pos = (self.pos[0] + self.x_force * time / 1000, self.pos[1] - self.y_force * time / 1000)
+            if self.pos[1] > mineral_floor:
+                self.pos = (self.pos[0], mineral_floor)
 
     def draw(self):
         SURFACE.blit(mineral_images, (self.pos[0] - mineral_size[0] / 2, self.pos[1] - mineral_size[1] / 2),
@@ -86,14 +107,17 @@ def main():
                             ew_sort = 0
                             for ew_count in range(1):
                                 ew_chance = randint(1, mineral_chance_max)
-                                print(ew_chance)
                                 for ew_mineral in range(len(minerals)):
                                     if ew_chance <= mineral_chances[ew_mineral]:
                                         ew_sort = ew_mineral
                                         break
                                     else:
                                         ew_chance -= mineral_chances[ew_mineral]
-                                MINERALS.append(Mineral(ew_sort))
+
+                                ew_angle = randint(mineral_min_angle, mineral_max_angle)
+                                ew_power = randint(mineral_min_power, mineral_max_power)
+
+                                MINERALS.append(Mineral(ew_sort, ew_angle, ew_power))
 
 
         # surface set
@@ -107,6 +131,10 @@ def main():
                 vibrationTick = max(vibrationTick - tickTime, 0)
             else:
                 SURFACE.blit(Rock_image, Rock_rect.topleft)
+
+            # mineral code
+            for ew_index in range(len(MINERALS)):
+                MINERALS[ew_index].tick(tickTime)
 
             # mineral draw
             for ew_index in range(len(MINERALS)):
