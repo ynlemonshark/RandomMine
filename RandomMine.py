@@ -14,6 +14,9 @@ Surface_height = 800
 display_ratio_x = Display_width / Surface_width
 display_ratio_y = Display_height / Surface_height
 
+number_font = "IMPACT"
+letter_font = "Calibri"
+
 FPS = 40
 
 pygame.init()
@@ -33,6 +36,8 @@ rock_vibration_delay = 50
 # mineral
 minerals = ("stone", "coal", "iron", "copper", "zinc", "silver", "gold", "bismuth")
 mineral_chances = (600, 200, 100, 60, 30, 5, 4, 1)
+mineral_colors = ((127, 127, 127), (31, 31, 31), (191, 191, 191), (255, 127, 95), (127, 191, 191), (239, 239, 239),
+                  (255, 255, 0), (191, 31, 191))
 
 mineral_chance_max = 0
 for e_chance in mineral_chances:
@@ -52,6 +57,25 @@ mineral_max_power = 700
 mineral_gravity = 1200
 
 mineral_floor = 600
+
+# inventory
+inventory_button_rect = Rect(1000, 600, 200, 200)
+inventory_button_image = pygame.transform.scale(pygame.image.load("resources/inventory_button.png"),
+                                                inventory_button_rect.size)
+
+inventory_mineral_size = (64, 64)
+inventory_mineral_image = pygame.transform.scale(pygame.image.load("resources/minerals.png"),
+                                                 (inventory_mineral_size[0] * len(minerals), inventory_mineral_size[1]))
+
+inventory_mineral_first_topleft = (900, 100)
+inventory_mineral_distance = 80
+
+inventory_mineral_count_font = pygame.font.SysFont(number_font, 50, False, False)
+inventory_mineral_count_text_space = 10
+
+inventory_back_button_rect = Rect(0, 0, 75, 75)
+inventory_back_button_image = pygame.transform.scale(pygame.image.load("resources/back button.png"),
+                                                     inventory_back_button_rect.size)
 
 
 class Mineral:
@@ -81,6 +105,10 @@ def main():
     CHANNEL = "MINE"
 
     MINERALS = []
+
+    INVENTORY_MINERAL = []
+    for em_repeat in range(len(minerals)):
+        INVENTORY_MINERAL.append(0)
 
     while True:
 
@@ -119,6 +147,14 @@ def main():
 
                                 MINERALS.append(Mineral(ew_sort, ew_angle, ew_power))
 
+                        # inventory button click
+                        if inventory_button_rect.collidepoint(event_pos):
+                            CHANNEL = "INVENTORY"
+
+                elif CHANNEL == "INVENTORY":
+                    if inventory_back_button_rect.collidepoint(event_pos):
+                        CHANNEL = "MINE"
+
 
         # surface set
         SURFACE.fill((255, 0, 0))
@@ -139,6 +175,29 @@ def main():
             # mineral draw
             for ew_index in range(len(MINERALS)):
                 MINERALS[ew_index].draw()
+
+            # inventory button
+            SURFACE.blit(inventory_button_image, inventory_button_rect.topleft)
+
+        # CHANNEL - INVENTORY
+        elif CHANNEL == "INVENTORY":
+            for ew_index in range(len(minerals)):
+                # inventory draw mineral
+                SURFACE.blit(inventory_mineral_image,
+                             (inventory_mineral_first_topleft[0],
+                              inventory_mineral_first_topleft[1] + inventory_mineral_distance * ew_index),
+                             (inventory_mineral_size[0] * ew_index, 0,
+                              inventory_mineral_size[0], inventory_mineral_size[1]))
+                ew_text = inventory_mineral_count_font.render(str(INVENTORY_MINERAL[ew_index]), True, mineral_colors[ew_index])
+                ew_rect = ew_text.get_rect()
+                ew_rect.midleft = (inventory_mineral_first_topleft[0] + inventory_mineral_size[0] +
+                                  inventory_mineral_count_text_space, inventory_mineral_first_topleft[1] +
+                                  inventory_mineral_distance * ew_index + inventory_mineral_size[1] / 2)
+
+                SURFACE.blit(ew_text, ew_rect.topleft)
+
+            SURFACE.blit(inventory_back_button_image, inventory_back_button_rect.topleft)
+
 
         # SYSTEM
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
