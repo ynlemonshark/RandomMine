@@ -3,7 +3,7 @@ import pygame
 import sys
 from pygame.locals import QUIT, Rect, MOUSEBUTTONDOWN
 from random import randint
-from math import sin, cos, radians
+from math import sin, cos, radians, dist
 
 Display_width = 1200
 Display_height = 800
@@ -58,6 +58,8 @@ mineral_gravity = 1200
 
 mineral_floor = 600
 
+mineral_pickable_distance = 40
+
 # inventory
 inventory_button_rect = Rect(1000, 600, 200, 200)
 inventory_button_image = pygame.transform.scale(pygame.image.load("resources/inventory_button.png"),
@@ -86,12 +88,15 @@ class Mineral:
         self.x_force = power * cos(radians(angle))
         self.y_force = power * sin(radians(angle))
 
+        self.on_floor = False
+
     def tick(self, time):
-        if self.pos[1] < mineral_floor:
+        if not self.on_floor:
             self.y_force -= mineral_gravity * time / 1000
             self.pos = (self.pos[0] + self.x_force * time / 1000, self.pos[1] - self.y_force * time / 1000)
             if self.pos[1] > mineral_floor:
                 self.pos = (self.pos[0], mineral_floor)
+                self.on_floor = True
 
     def draw(self):
         SURFACE.blit(mineral_images, (self.pos[0] - mineral_size[0] / 2, self.pos[1] - mineral_size[1] / 2),
@@ -127,7 +132,11 @@ def main():
                 if CHANNEL == "MINE":  # MOUSEBUTTONDOWN - MINE
 
                     if pygame_event.button == 1:
-                       # mining
+                        # inventory button click
+                        if inventory_button_rect.collidepoint(event_pos):
+                            CHANNEL = "INVENTORY"
+
+                        # mining
                         if Rock_rect.collidepoint(event_pos):
                             vibrationTick = rock_vibration_delay
 
@@ -147,9 +156,16 @@ def main():
 
                                 MINERALS.append(Mineral(ew_sort, ew_angle, ew_power))
 
-                        # inventory button click
-                        if inventory_button_rect.collidepoint(event_pos):
-                            CHANNEL = "INVENTORY"
+                        # pick up code
+                        else:
+                            for ew_index in range(len(MINERALS)):
+                                if MINERALS[ew_index].on_floor:
+                                    if mineral_pickable_distance >= dist(MINERALS[ew_index].pos, event_pos):
+                                        INVENTORY_MINERAL[MINERALS[ew_index].sort] += 1
+                                        MINERALS[ew_index] = 0
+
+                            for ew_repeat in range(MINERALS.count(0)):
+                                MINERALS.remove(0)
 
                 elif CHANNEL == "INVENTORY":
                     if inventory_back_button_rect.collidepoint(event_pos):
