@@ -51,10 +51,10 @@ mineral_images = pygame.transform.scale(pygame.image.load("resources/minerals.pn
 mineral_min_angle = 70
 mineral_max_angle = 110
 
-mineral_min_power = 600
-mineral_max_power = 700
+mineral_min_power = 700
+mineral_max_power = 800
 
-mineral_gravity = 1200
+mineral_gravity = 1400
 
 mineral_floor = 600
 
@@ -79,6 +79,12 @@ inventory_back_button_rect = Rect(0, 0, 75, 75)
 inventory_back_button_image = pygame.transform.scale(pygame.image.load("resources/back button.png"),
                                                      inventory_back_button_rect.size)
 
+# background
+background_channels = ("MINE", "INVENTORY")
+background_images = {}
+for e_channel in background_channels:
+    background_images[e_channel] = pygame.transform.scale(
+        pygame.image.load("resources/backgrounds/{}.png".format(e_channel)), (Surface_width, Surface_height))
 
 class Mineral:
     def __init__(self, sort, angle, power):
@@ -172,8 +178,8 @@ def main():
                         CHANNEL = "MINE"
 
 
-        # surface set
-        SURFACE.fill((255, 0, 0))
+        # surface backgrounds
+        SURFACE.blit(background_images[CHANNEL], (0, 0))
 
         # CHANNEL - MINE
         if CHANNEL == "MINE":
