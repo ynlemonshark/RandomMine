@@ -69,7 +69,7 @@ inventory_mineral_size = (64, 64)
 inventory_mineral_image = pygame.transform.scale(pygame.image.load("resources/minerals.png"),
                                                  (inventory_mineral_size[0] * len(minerals), inventory_mineral_size[1]))
 
-inventory_mineral_first_topleft = (900, 100)
+inventory_mineral_first_topleft = (900, 120)
 inventory_mineral_distance = 80
 
 inventory_mineral_count_font = pygame.font.SysFont(number_font, 50, False, False)
@@ -78,6 +78,10 @@ inventory_mineral_count_text_space = 10
 inventory_back_button_rect = Rect(0, 0, 75, 75)
 inventory_back_button_image = pygame.transform.scale(pygame.image.load("resources/back button.png"),
                                                      inventory_back_button_rect.size)
+
+inventory_mineral_frame_rect = Rect(850, 25, 300, 750)
+inventory_mineral_frame_image = pygame.transform.scale(pygame.image.load("resources/mineral_frame.png"),
+                                                       inventory_mineral_frame_rect.size)
 
 # background
 background_channels = ("MINE", "INVENTORY")
@@ -203,8 +207,10 @@ def main():
 
         # CHANNEL - INVENTORY
         elif CHANNEL == "INVENTORY":
+            # inventory draw mineral
+            SURFACE.blit(inventory_mineral_frame_image, inventory_mineral_frame_rect.topleft)
+
             for ew_index in range(len(minerals)):
-                # inventory draw mineral
                 SURFACE.blit(inventory_mineral_image,
                              (inventory_mineral_first_topleft[0],
                               inventory_mineral_first_topleft[1] + inventory_mineral_distance * ew_index),
