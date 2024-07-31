@@ -35,11 +35,12 @@ rock_vibration_delay = 50
 
 # mineral
 minerals = ("stone", "coal", "iron", "copper", "zinc", "silver", "gold", "bismuth")
-mineral_chances = (600, 200, 100, 60, 30, 5, 4, 1)
-mineral_colors = ((127, 127, 127), (31, 31, 31), (191, 191, 191), (255, 127, 95), (127, 191, 191), (239, 239, 239),
-                  (255, 255, 0), (191, 31, 191))
+mineral_chances = (620, 220, 100, 30, 20, 5, 4, 1)
+mineral_colors = ((127, 127, 127), (31, 31, 31), (191, 191, 191), (255, 127, 95), (127, 191, 191), (210, 210, 210),
+                  (255, 191, 0), (191, 31, 191))
 
-mineral_chain_decrease_chances = (5, 7, 9, 11, 13, 15, 17, 19)
+mineral_chain_decrease_chances = (5, 5, 4, 4, 5, 4, 4, 10)
+mineral_chain_start_chances = (100, 90, 80, 80, 75, 70, 70, 70)
 
 mineral_chance_max = 0
 for e_chance in mineral_chances:
@@ -156,9 +157,9 @@ def main():
                             vibrationTick = rock_vibration_delay
 
                             # make mineral
-                            if randint(1, 100) > CHAIN_PERCENT:
-                                CHAIN_MINERAL = 0
-                                for ew_count in range(1):
+                            for ew_count in range(10):
+                                if randint(1, 100) > CHAIN_PERCENT:
+                                    CHAIN_MINERAL = 0
                                     ew_chance = randint(1, mineral_chance_max)
                                     for ew_mineral in range(len(minerals)):
                                         if ew_chance <= mineral_chances[ew_mineral]:
@@ -167,16 +168,16 @@ def main():
                                         else:
                                             ew_chance -= mineral_chances[ew_mineral]
 
-                                CHAIN_PERCENT = 100 - mineral_chain_decrease_chances[CHAIN_MINERAL]
-                            else:
-                                CHAIN_PERCENT -= mineral_chain_decrease_chances[CHAIN_MINERAL]
+                                    CHAIN_PERCENT = mineral_chain_start_chances[CHAIN_MINERAL]
+                                else:
+                                    CHAIN_PERCENT -= mineral_chain_decrease_chances[CHAIN_MINERAL]
 
-                            ew_sort = CHAIN_MINERAL
+                                ew_sort = CHAIN_MINERAL
 
-                            ew_angle = randint(mineral_min_angle, mineral_max_angle)
-                            ew_power = randint(mineral_min_power, mineral_max_power)
+                                ew_angle = randint(mineral_min_angle, mineral_max_angle)
+                                ew_power = randint(mineral_min_power, mineral_max_power)
 
-                            MINERALS.append(Mineral(ew_sort, ew_angle, ew_power))
+                                MINERALS.append(Mineral(ew_sort, ew_angle, ew_power))
 
                         # pick up code
                         else:
