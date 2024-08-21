@@ -86,6 +86,10 @@ inventory_mineral_frame_rect = Rect(850, 25, 300, 750)
 inventory_mineral_frame_image = pygame.transform.scale(pygame.image.load("resources/mineral_frame.png"),
                                                        inventory_mineral_frame_rect.size)
 
+# fatigue
+fatigue_bar_rect = Rect(200, 700, 800, 100)
+fatigue_bar_image = pygame.transform.scale(pygame.image.load("resources/fatigue_bar.png"), fatigue_bar_rect.size)
+
 # background
 background_channels = ("MINE", "INVENTORY")
 background_images = {}
@@ -157,7 +161,7 @@ def main():
                             vibrationTick = rock_vibration_delay
 
                             # make mineral
-                            for ew_count in range(10):
+                            for ew_count in range(1):
                                 if randint(1, 100) > CHAIN_PERCENT:
                                     CHAIN_MINERAL = 0
                                     ew_chance = randint(1, mineral_chance_max)
@@ -214,6 +218,9 @@ def main():
             # mineral draw
             for ew_index in range(len(MINERALS)):
                 MINERALS[ew_index].draw()
+
+            # fatigue bar draw
+            SURFACE.blit(fatigue_bar_image, fatigue_bar_rect.topleft)
 
             # inventory button
             SURFACE.blit(inventory_button_image, inventory_button_rect.topleft)
