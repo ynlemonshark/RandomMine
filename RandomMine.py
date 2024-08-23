@@ -97,6 +97,7 @@ for e_channel in background_channels:
     background_images[e_channel] = pygame.transform.scale(
         pygame.image.load("resources/backgrounds/{}.png".format(e_channel)), (Surface_width, Surface_height))
 
+
 class Mineral:
     def __init__(self, sort, angle, power):
         self.sort = sort
