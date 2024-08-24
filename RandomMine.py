@@ -90,6 +90,18 @@ inventory_mineral_frame_image = pygame.transform.scale(pygame.image.load("resour
 fatigue_bar_rect = Rect(200, 700, 800, 100)
 fatigue_bar_image = pygame.transform.scale(pygame.image.load("resources/fatigue_bar.png"), fatigue_bar_rect.size)
 
+fatigue_inside_bar_rect = Rect(320, 720, 660, 30)
+
+fatigue_regeneration_gage = Rect(320, 760, 660, 20)
+
+fatigue_regeneration_term = 5000
+
+max_fatigue = 200
+fatigue_font = pygame.font.SysFont(number_font, 15, False, False)
+
+fatigue_font_color = (255, 255, 255)
+fatigue_font_center = (250, 775)
+
 # background
 background_channels = ("MINE", "INVENTORY")
 background_images = {}
@@ -121,6 +133,24 @@ class Mineral:
                      (mineral_size[0] * self.sort, 0, mineral_size[0], mineral_size[1]))
 
 
+def red_green_color(value, max_value):
+    max_value_trisection = max_value / 3
+
+    if value < max_value_trisection:
+        red = 255
+        green = 255 * value / max_value_trisection
+        blue = 0
+    else:
+        red = 255 - 255 * (value - max_value_trisection) / max_value_trisection / 2
+        green = 255
+        blue = 0
+
+    color = (red, green, blue)
+
+    return color
+
+
+
 def main():
     tickTime = 1000 / FPS
     vibrationTick = 0
@@ -135,6 +165,11 @@ def main():
 
     CHAIN_MINERAL = 0
     CHAIN_PERCENT = 0
+
+    Max_Fatigue = max_fatigue
+    Fatigue = Max_Fatigue
+
+    Fatigue_regeneration = 0
 
     while True:
 
@@ -159,46 +194,53 @@ def main():
 
                         # mining
                         if Rock_rect.collidepoint(event_pos):
-                            vibrationTick = rock_vibration_delay
+                            if Fatigue:
+                                vibrationTick = rock_vibration_delay
+                                Fatigue -= 1
 
-                            # make mineral
-                            for ew_count in range(1):
-                                if randint(1, 100) > CHAIN_PERCENT:
-                                    CHAIN_MINERAL = 0
-                                    ew_chance = randint(1, mineral_chance_max)
-                                    for ew_mineral in range(len(minerals)):
-                                        if ew_chance <= mineral_chances[ew_mineral]:
-                                            CHAIN_MINERAL = ew_mineral
-                                            break
-                                        else:
-                                            ew_chance -= mineral_chances[ew_mineral]
+                                # make mineral
+                                for ew_count in range(1):
+                                    if randint(1, 100) > CHAIN_PERCENT:
+                                        CHAIN_MINERAL = 0
+                                        ew_chance = randint(1, mineral_chance_max)
+                                        for ew_mineral in range(len(minerals)):
+                                            if ew_chance <= mineral_chances[ew_mineral]:
+                                                CHAIN_MINERAL = ew_mineral
+                                                break
+                                            else:
+                                                ew_chance -= mineral_chances[ew_mineral]
 
-                                    CHAIN_PERCENT = mineral_chain_start_chances[CHAIN_MINERAL]
-                                else:
-                                    CHAIN_PERCENT -= mineral_chain_decrease_chances[CHAIN_MINERAL]
+                                        CHAIN_PERCENT = mineral_chain_start_chances[CHAIN_MINERAL]
+                                    else:
+                                        CHAIN_PERCENT -= mineral_chain_decrease_chances[CHAIN_MINERAL]
 
-                                ew_sort = CHAIN_MINERAL
+                                    ew_sort = CHAIN_MINERAL
 
-                                ew_angle = randint(mineral_min_angle, mineral_max_angle)
-                                ew_power = randint(mineral_min_power, mineral_max_power)
+                                    ew_angle = randint(mineral_min_angle, mineral_max_angle)
+                                    ew_power = randint(mineral_min_power, mineral_max_power)
 
-                                MINERALS.append(Mineral(ew_sort, ew_angle, ew_power))
+                                    MINERALS.append(Mineral(ew_sort, ew_angle, ew_power))
 
                         # pick up code
-                        else:
-                            for ew_index in range(len(MINERALS)):
-                                if MINERALS[ew_index].on_floor:
-                                    if mineral_pickable_distance >= dist(MINERALS[ew_index].pos, event_pos):
-                                        INVENTORY_MINERAL[MINERALS[ew_index].sort] += 1
-                                        MINERALS[ew_index] = 0
+                        for ew_index in range(len(MINERALS)):
+                            if MINERALS[ew_index].on_floor:
+                                if mineral_pickable_distance >= dist(MINERALS[ew_index].pos, event_pos):
+                                    INVENTORY_MINERAL[MINERALS[ew_index].sort] += 1
+                                    MINERALS[ew_index] = 0
 
-                            for ew_repeat in range(MINERALS.count(0)):
-                                MINERALS.remove(0)
+                        for ew_repeat in range(MINERALS.count(0)):
+                            MINERALS.remove(0)
 
                 elif CHANNEL == "INVENTORY":
                     if inventory_back_button_rect.collidepoint(event_pos):
                         CHANNEL = "MINE"
 
+        # Fatigue regeneration
+        if Fatigue_regeneration < fatigue_regeneration_term:
+            Fatigue_regeneration += 1000 / FPS
+        while Fatigue_regeneration >= fatigue_regeneration_term and Fatigue < Max_Fatigue:
+            Fatigue_regeneration -= fatigue_regeneration_term
+            Fatigue += 1
 
         # surface backgrounds
         SURFACE.blit(background_images[CHANNEL], (0, 0))
@@ -222,6 +264,20 @@ def main():
 
             # fatigue bar draw
             SURFACE.blit(fatigue_bar_image, fatigue_bar_rect.topleft)
+            pygame.draw.rect(SURFACE, red_green_color(Fatigue, Max_Fatigue),
+                             (fatigue_inside_bar_rect.topleft,
+                              (fatigue_inside_bar_rect.width * Fatigue / Max_Fatigue, fatigue_inside_bar_rect.height)))
+            pygame.draw.rect(SURFACE, (255, 255, 0),
+                             (fatigue_regeneration_gage.topleft,
+                              (fatigue_regeneration_gage.width * min(1, Fatigue_regeneration / fatigue_regeneration_term),
+                               fatigue_regeneration_gage.height)))
+
+            ew_text = fatigue_font.render(str(Fatigue) + " / " + str(Max_Fatigue), False, fatigue_font_color)
+            ew_rect = ew_text.get_rect()
+
+            ew_rect.center = fatigue_font_center
+
+            SURFACE.blit(ew_text, ew_rect.topleft)
 
             # inventory button
             SURFACE.blit(inventory_button_image, inventory_button_rect.topleft)
